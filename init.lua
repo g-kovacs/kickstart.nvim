@@ -226,6 +226,9 @@ vim.api.nvim_create_autocmd('BufWritePre', {
       bufnr = args.buf,
       async = false,
       filter = function(client)
+        if vim.bo[args.buf].filetype == 'python' then
+          return client.name == 'ruff'
+        end
         return client.name == 'clangd'
       end,
     }
@@ -699,6 +702,7 @@ require('lazy').setup({
         },
         gopls = {},
         cmake = {},
+        ruff = {},
         -- pyright = {},
         -- rust_analyzer = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
@@ -743,6 +747,7 @@ require('lazy').setup({
       vim.list_extend(ensure_installed, {
         'stylua', -- Used to format Lua code
         'clang-format',
+        'ruff',
       })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
