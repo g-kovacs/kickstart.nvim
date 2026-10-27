@@ -220,17 +220,29 @@ vim.api.nvim_create_autocmd('TextYankPost', {
 })
 
 vim.api.nvim_create_autocmd('BufWritePre', {
-  pattern = { '*.c', '*.cc', '*.cpp', '*.cxx', '*.h', '*.hh', '*.hpp', '*.hxx' },
+  pattern = { '*.c', '*.cc', '*.cpp', '*.cxx', '*.h', '*.hh', '*.hpp', '*.hxx', '*.py', '*.xml', '*.xsd', '*.xsl', '*.xslt' },
   callback = function(args)
+    local formatters = {
+      python = 'ruff',
+      xml = 'lemminx',
+      xsd = 'lemminx',
+      xsl = 'lemminx',
+      xslt = 'lemminx',
+    }
+
+    local client_name = formatters[filetype] or 'clangd'
+
     vim.lsp.buf.format {
       bufnr = args.buf,
       async = false,
+      timeout_ms = 3000,
       filter = function(client)
-        if vim.bo[args.buf].filetype == 'python' then
-          return client.name == 'ruff'
-        end
-        return client.name == 'clangd'
+        return client.name == client_name
       end,
+      formatting_options = client_name == 'lemminx' and {
+        tabSize = 2,
+        insertSpaces = true,
+      } or nil,
     }
   end,
 })
@@ -703,6 +715,7 @@ require('lazy').setup({
         gopls = {},
         cmake = {},
         ruff = {},
+        lemminx = {},
         -- pyright = {},
         -- rust_analyzer = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
